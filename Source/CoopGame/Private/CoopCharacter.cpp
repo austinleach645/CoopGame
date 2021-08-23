@@ -2,12 +2,24 @@
 
 
 #include "CoopCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 // Sets default values
 ACoopCharacter::ACoopCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	SpringComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringComp"));
+	SpringComp->bUsePawnControlRotation = true;
+	SpringComp->SetupAttachment(RootComponent);
+
+	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+	CameraComp->SetupAttachment(SpringComp);
 
 }
 
@@ -16,6 +28,24 @@ void ACoopCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void ACoopCharacter::MoveForward(float value)
+{
+	AddMovementInput(GetActorForwardVector() * value);
+}
+
+void ACoopCharacter::MoveRight(float value)
+{
+	AddMovementInput(GetActorRightVector() * value);
+}
+
+void ACoopCharacter::BeginCrouch() {
+	Crouch();
+}
+
+void ACoopCharacter::EndCrouch() {
+	UnCrouch();
 }
 
 // Called every frame
@@ -30,5 +60,13 @@ void ACoopCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	PlayerInputComponent->BindAxis("MoveForward", this, &ACoopCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ACoopCharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis("LookUp", this, &ACoopCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookRight", this, &ACoopCharacter::AddControllerYawInput);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACoopCharacter::BeginCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACoopCharacter::EndCrouch);
 }
 
