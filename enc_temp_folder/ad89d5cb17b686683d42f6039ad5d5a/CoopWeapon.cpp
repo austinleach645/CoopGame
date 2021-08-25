@@ -32,7 +32,6 @@ void ACoopWeapon::Fire() {
 		QueryParams.AddIgnoredActor(MyOwner);
 		QueryParams.AddIgnoredActor(this);
 		QueryParams.bTraceComplex = true;
-		QueryParams.bReturnPhysicalMaterial = true;
 
 		FVector BeamEnd = TraceEnd;
 
