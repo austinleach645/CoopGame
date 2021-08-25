@@ -45,6 +45,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float ZoomFOV;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (ClampMin = 0.1, ClampMax = 100))
+	float ZoomInterpSpeed;
+
 	float DefaultFOV;
 
 public:	

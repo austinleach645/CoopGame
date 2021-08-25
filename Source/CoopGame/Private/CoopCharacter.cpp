@@ -62,12 +62,10 @@ void ACoopCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bWantsToZoom) {
-		CameraComp->SetFieldOfView(ZoomFOV);
-	}
-	else {
-		CameraComp->SetFieldOfView(DefaultFOV);
-	}
+	float TargetFOV = bWantsToZoom ? ZoomFOV : DefaultFOV;
+	float CurrentFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
+
+	CameraComp->SetFieldOfView(CurrentFOV);
 }
 
 // Called to bind functionality to input
