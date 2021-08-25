@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "CoopCharacter.generated.h"
 
+class ACoopWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 
@@ -33,6 +34,13 @@ protected:
 	void ZoomIn();
 
 	void ZoomOut();
+
+	void Fire();
+
+	ACoopWeapon* CurrentWeapon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<ACoopWeapon> StarterWeapon;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CameraComp")
 	UCameraComponent* CameraComp;

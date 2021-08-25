@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "CoopWeapon.h"
 
 // Sets default values
 ACoopCharacter::ACoopCharacter()
@@ -29,6 +30,15 @@ void ACoopCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	DefaultFOV = CameraComp->FieldOfView;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	CurrentWeapon = GetWorld()->SpawnActor<ACoopWeapon>(StarterWeapon, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	if (CurrentWeapon) {
+		CurrentWeapon->SetOwner(this);
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "weapon_socket");
+	}
 }
 
 void ACoopCharacter::MoveForward(float value)
@@ -55,6 +65,13 @@ void ACoopCharacter::ZoomIn() {
 
 void ACoopCharacter::ZoomOut() {
 	bWantsToZoom = false;
+}
+
+void ACoopCharacter::Fire()
+{
+	if (CurrentWeapon) {
+		CurrentWeapon->Fire();
+	}
 }
 
 // Called every frame
@@ -86,6 +103,8 @@ void ACoopCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ACoopCharacter::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ACoopCharacter::ZoomOut);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACoopCharacter::Fire);
 }
 
 FVector ACoopCharacter::GetPawnViewLocation() const
