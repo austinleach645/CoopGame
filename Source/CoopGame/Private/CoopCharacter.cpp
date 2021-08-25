@@ -28,6 +28,7 @@ void ACoopCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	DefaultFOV = CameraComp->FieldOfView;
 }
 
 void ACoopCharacter::MoveForward(float value)
@@ -48,11 +49,25 @@ void ACoopCharacter::EndCrouch() {
 	UnCrouch();
 }
 
+void ACoopCharacter::ZoomIn() {
+	bWantsToZoom = true;
+}
+
+void ACoopCharacter::ZoomOut() {
+	bWantsToZoom = false;
+}
+
 // Called every frame
 void ACoopCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bWantsToZoom) {
+		CameraComp->SetFieldOfView(ZoomFOV);
+	}
+	else {
+		CameraComp->SetFieldOfView(DefaultFOV);
+	}
 }
 
 // Called to bind functionality to input
@@ -70,6 +85,9 @@ void ACoopCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACoopCharacter::EndCrouch);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ACoopCharacter::ZoomIn);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ACoopCharacter::ZoomOut);
 }
 
 FVector ACoopCharacter::GetPawnViewLocation() const

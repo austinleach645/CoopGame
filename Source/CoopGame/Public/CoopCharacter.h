@@ -30,11 +30,22 @@ protected:
 
 	void EndCrouch();
 
+	void ZoomIn();
+
+	void ZoomOut();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CameraComp")
 	UCameraComponent* CameraComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CameraComp")
 	USpringArmComponent* SpringComp;
+
+	bool bWantsToZoom;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	float ZoomFOV;
+
+	float DefaultFOV;
 
 public:	
 	// Called every frame
