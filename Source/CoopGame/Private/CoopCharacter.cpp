@@ -70,7 +70,14 @@ void ACoopCharacter::ZoomOut() {
 void ACoopCharacter::Fire()
 {
 	if (CurrentWeapon) {
-		CurrentWeapon->Fire();
+		CurrentWeapon->StartFire();
+	}
+}
+
+void ACoopCharacter::StopFire()
+{
+	if (CurrentWeapon) {
+		CurrentWeapon->StopFire();
 	}
 }
 
@@ -105,6 +112,7 @@ void ACoopCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ACoopCharacter::ZoomOut);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACoopCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ACoopCharacter::StopFire);
 }
 
 FVector ACoopCharacter::GetPawnViewLocation() const

@@ -37,6 +37,8 @@ protected:
 
 	void Fire();
 
+	void StopFire();
+
 	ACoopWeapon* CurrentWeapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player")

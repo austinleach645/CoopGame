@@ -7,6 +7,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "CoopGame/CoopGame.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "TimerManager.h"
 
 // Sets default values
 ACoopWeapon::ACoopWeapon()
@@ -16,6 +17,15 @@ ACoopWeapon::ACoopWeapon()
 	RootComponent = MeshComp;
 
 	MuzzleSocketName = "MuzzleFlashSocket";
+
+	FireRate = 600;
+}
+
+void ACoopWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Time_FireRate = 60 / FireRate;
 }
 
 void ACoopWeapon::Fire() {
@@ -37,14 +47,19 @@ void ACoopWeapon::Fire() {
 		FVector BeamEnd = TraceEnd;
 
 		FHitResult Hit;
-		if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, ECC_Visibility, QueryParams)) {
+		if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, COLLISION_WEAPON, QueryParams)) {
 			AActor* HitActor = Hit.GetActor();
 			
 			BeamEnd = Hit.ImpactPoint;
-
-			UGameplayStatics::ApplyPointDamage(HitActor, 20.0f, EyeRotation.Vector(), Hit, MyOwner->GetInstigatorController() , this, DamageType);
-
+			
+			float ActualDamage = 20.0f;
 			EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(Hit.PhysMaterial.Get());
+			if (SurfaceType == SURFACE_FLESHVULNERABLE) {
+				ActualDamage = 100.0f;
+			}
+
+			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, EyeRotation.Vector(), Hit, MyOwner->GetInstigatorController(), this, DamageType);
+
 			UParticleSystem* SelectedEffect = nullptr;
 
 			switch (SurfaceType)
@@ -87,7 +102,20 @@ void ACoopWeapon::Fire() {
 			}
 		}
 	}
+	
+	LastTimeFired = GetWorld()->TimeSeconds;
+}
 
+void ACoopWeapon::StartFire()
+{
+	float FirstDelay = LastTimeFired + Time_FireRate - GetWorld()->TimeSeconds;
+
+	GetWorldTimerManager().SetTimer(TimeBetweenShots, this, &ACoopWeapon::Fire, Time_FireRate, true, FirstDelay);
+}
+
+void ACoopWeapon::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(TimeBetweenShots);
 }
 
 
