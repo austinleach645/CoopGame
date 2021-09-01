@@ -5,7 +5,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "CoopWeapon.h"
+#include "CoopGame/CoopGame.h"
+#include "CoopHealthComponent.h"
 
 // Sets default values
 ACoopCharacter::ACoopCharacter()
@@ -18,6 +21,10 @@ ACoopCharacter::ACoopCharacter()
 	SpringComp->SetupAttachment(RootComponent);
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+
+	HealthComp = CreateDefaultSubobject<UCoopHealthComponent>(TEXT("HealthComp"));
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringComp);
@@ -39,6 +46,8 @@ void ACoopCharacter::BeginPlay()
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "weapon_socket");
 	}
+
+	HealthComp->OnHealthChanged.AddDynamic(this, &ACoopCharacter::OnHealthChanged);
 }
 
 void ACoopCharacter::MoveForward(float value)
@@ -121,5 +130,18 @@ FVector ACoopCharacter::GetPawnViewLocation() const
 		return CameraComp->GetComponentLocation();
 	}
 	return Super::GetPawnViewLocation();
+}
+
+void ACoopCharacter::OnHealthChanged(UCoopHealthComponent* NotHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser) {
+	if (Health <= 0.0f && !bDied) {
+		bDied = true;
+
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		DetachFromControllerPendingDestroy();
+
+		SetLifeSpan(10.0f);
+	}
 }
 

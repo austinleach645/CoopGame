@@ -9,6 +9,7 @@
 class ACoopWeapon;
 class UCameraComponent;
 class USpringArmComponent;
+class UCoopHealthComponent;
 
 UCLASS()
 class COOPGAME_API ACoopCharacter : public ACharacter
@@ -50,7 +51,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CameraComp")
 	USpringArmComponent* SpringComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HealthComp")
+	UCoopHealthComponent* HealthComp;
+
 	bool bWantsToZoom;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bDied;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float ZoomFOV;
@@ -68,5 +75,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual FVector GetPawnViewLocation() const override;
+
+	UFUNCTION()
+	void OnHealthChanged(UCoopHealthComponent* NotHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 };
