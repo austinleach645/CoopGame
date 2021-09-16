@@ -40,6 +40,7 @@ protected:
 
 	void StopFire();
 
+	UPROPERTY(Replicated)
 	ACoopWeapon* CurrentWeapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
@@ -56,7 +57,7 @@ protected:
 
 	bool bWantsToZoom;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
@@ -78,5 +79,6 @@ public:
 
 	UFUNCTION()
 	void OnHealthChanged(UCoopHealthComponent* NotHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
 
 };
