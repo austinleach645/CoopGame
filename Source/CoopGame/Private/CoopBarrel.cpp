@@ -5,6 +5,7 @@
 #include "CoopHealthComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/RadialForceComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ACoopBarrel::ACoopBarrel()
@@ -23,6 +24,9 @@ ACoopBarrel::ACoopBarrel()
 	ForceComp->bImpulseVelChange = true;
 	ForceComp->bAutoActivate = false;
 	ForceComp->bIgnoreOwningActor = true;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 
@@ -34,7 +38,8 @@ void ACoopBarrel::OnHealthChanged(UCoopHealthComponent* NotHealthComp, float Hea
 
 		FVector BarrelLocation = GetActorLocation();
 
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+		OnRep_Exploded();
+		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
 		
 		ForceComp->FireImpulse();
 
@@ -42,3 +47,14 @@ void ACoopBarrel::OnHealthChanged(UCoopHealthComponent* NotHealthComp, float Hea
 	}
 }
 
+void ACoopBarrel::OnRep_Exploded()
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+}
+
+void ACoopBarrel::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACoopBarrel, bExploded);
+}

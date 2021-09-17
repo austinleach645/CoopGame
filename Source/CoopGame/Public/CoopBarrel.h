@@ -34,7 +34,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* ExplosionEffect;
 
+	UPROPERTY(ReplicatedUsing=OnRep_Exploded)
 	bool bExploded;
+
+	UFUNCTION()
+	void OnRep_Exploded();
 
 
 public:	
