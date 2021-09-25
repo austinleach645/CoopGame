@@ -8,6 +8,7 @@
 
 class UStaticMeshComponent;
 class UCoopHealthComponent;
+class USphereComponent;
 
 UCLASS()
 class COOPGAME_API ACoopTrackerBot : public APawn
@@ -46,8 +47,31 @@ protected:
 
 	UMaterialInstanceDynamic* MatInst;
 
+	void SelfDestruct();
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	UParticleSystem* ExplosionEffect;
+
+	bool bExploded;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float ExplodeRadius;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float ExplodeDamage;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	USphereComponent* SphereComp;
+
+	FTimerHandle TimerHandle_SelfDamage;
+
+	void DamageSelf();
+
+	bool bStartSelfDestruct;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };

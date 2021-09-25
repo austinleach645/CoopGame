@@ -8,6 +8,8 @@
 #include "NavigationPath.h"
 #include "GameFramework/Character.h"
 #include "CoopHealthComponent.h"
+#include "Components/SphereComponent.h"
+#include "CoopCharacter.h"
 
 // Sets default values
 ACoopTrackerBot::ACoopTrackerBot()
@@ -26,6 +28,21 @@ ACoopTrackerBot::ACoopTrackerBot()
 	bUseVelocityChange = false;
 	MovementForce = 1000;
 	RequiredDistanceTarget = 100;
+
+	ExplodeRadius = 200;
+	ExplodeDamage = 100;
+
+	bExploded = false;
+
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SphereComp->SetSphereRadius(200);
+	SphereComp->SetupAttachment(RootComponent);
+	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+
+	bStartSelfDestruct = false;
+
 }
 
 // Called when the game starts or when spawned
@@ -76,4 +93,40 @@ void ACoopTrackerBot::HandleDamage(UCoopHealthComponent* NotHealthComp, float He
 	if (MatInst) {
 		MatInst->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
 	}
+	if (Health <= 0) {
+		SelfDestruct();
+	}
+}
+
+void ACoopTrackerBot::SelfDestruct()
+{
+	if (bExploded) {
+		return;
+	}
+	bExploded = true;
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+	
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+	UGameplayStatics::ApplyRadialDamage(this, ExplodeDamage, GetActorLocation(), ExplodeRadius, nullptr, IgnoredActors, this, GetInstigatorController(), true);
+
+	Destroy();
+}
+
+void ACoopTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	if (bStartSelfDestruct) {
+		return;
+	}
+	ACoopCharacter* PlayerPawn = Cast<ACoopCharacter>(OtherActor);
+	if (PlayerPawn) {
+		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ACoopTrackerBot::DamageSelf, 0.5f, true, 0.0f);
+		bStartSelfDestruct = true;
+	}
+}
+
+void ACoopTrackerBot::DamageSelf()
+{
+	UGameplayStatics::ApplyDamage(this, 20, GetInstigatorController(), this, nullptr);
 }
